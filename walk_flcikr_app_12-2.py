@@ -21,6 +21,9 @@ records being returned.  I will nedd to work in some error variables to count
 errors and ensure that I do not enter duplicate records into the db.
 '''
 
+f = open('')
+
+
 walker = flickr.walk(min_upload_date='2013-01-01',
                              bbox='-122.523763, 37.696404, -122.331622, 37.83166',
                              accuracy=16,
@@ -32,6 +35,8 @@ print total , " total photos for bbox"
 for photo in walker:
     for photo in walker:
 	pid = photo.get('id')
+    pids = str(pid)
+    f.write('"'+ pids +)
 	owner = photo.get('owner')
 	try:
 		title = photo.get('title')
