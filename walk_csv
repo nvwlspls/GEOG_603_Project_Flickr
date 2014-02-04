@@ -9,7 +9,7 @@ flickr = flickrapi.FlickrAPI('c83487f5d94759be0bcbe9a480be02c8', format='etree')
 
 '''the .walk method does a search through a set of data and
 returns every result.  Normally you need to go through the
-pages, but the flickrapi takes care of this.
+pages, but the flickrapi python helper takes care of this.
 '''
 walker = flickr.walk(min_upload_date='2013 - 01 - 01',
                      bbox='-122.523763, 37.696404, -122.331622, 37.831665',
