@@ -1,19 +1,22 @@
 __author__ = 'waynejessen'
 
-import flickrapi
+import xml.etree.ElementTree as ET
+import requests
 
 f = open('flickr-data-SF#1.csv', 'w')
 
 g = open('smallboxes-SF', 'w')
-api_key = 'c83487f5d94759be0bcbe9a480be02c8'
+# api_key = 'for'
 
-flickr = flickrapi.FlickrAPI(api_key, format='etree')
+# flickr = flickrapi.FlickrAPI(api_key, format='etree')
 
 #this is the space where I will connect to the db
 # conn = psycopg2.connect(database='flickr_photos', user='wayne', password='smallbar')
 
 #create the cursor
 # cur = conn.cursor
+url = 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=c83487f5d94759be0bcbe9a480be02c8'
+
 
 #starting bounding box
 #sf box -122.523763, 37.696404, -122.331622, 37.831665
@@ -25,17 +28,18 @@ smallboxes = []
 
 #current box check for the total number of photos
 def check_current_box(curbox):
-    boxcheck = flickr.photos_search(min_taken_date='2011-01-01',
-                                    bbox= '%s, %s, %s, %s'%(curbox[0], curbox[1], curbox[2], curbox[3]),
-                                    accuracy='16',)
+    stringBox = str(curbox).strip("[]")
+    args = {'min_take_date' : '2011-01-01',
+            'bbox' : stringBox,
+             'accuracy' : 16,
+             'extras' : 'geo, date_taken, tags, url_sq'}
+    box = requests.get(url, params = args)
     #need to parse element 'photos' in order to get
     #this will need to be debugged
-    boxcheck.attrib['stat'] = 'ok'
-    total = boxcheck.find('photos').attrib['total']
-    nophotos = int(float(total))
-    pages = boxcheck.find('photos').attrib['pages']
-    nopages = int(float(pages))
-    return {"total": nophotos, "pages": nopages}
+    checkBox = ET.fromstring(box.content)
+    total = int(checkBox[0].attrib['total'])
+    nopages = int(checkBox[0].attrib['pages'])
+    return {"total": total, "pages": nopages}
 
 
 #function to get small enough boxes
@@ -76,46 +80,47 @@ def get_small_boxes(boundingbox):
 def get_data(box, pages):
     curpage = 1
     while curpage <= pages:
-        result = flickr.photos_search(min_taken_date='2011-01-01',
-                                        bbox= '%s, %s, %s, %s'%(box[0], box[1], box[2], box[3]),
-                                        accuracy='16',
-                                        page = '%s'% curpage,
-                                        extras = 'geo, date_taken, tags')
+        stringBox = str(box).strip("[]")
+        args = {'min_take_date' : '2011-01-01',
+                    'bbox' : stringBox,
+                    'accuracy' : 16,
+                    'extras' : 'geo, date_taken, tags, url_sq'}
+        result = requests.get(url, params = args)
         curpage += 1
-        for photo in result.iter('photo'):
-            pid = photo.get('id')     #pid = photoid, this gets the XML element labled id from the method above
-            pids = str(pid)        #changes the data type of pid into a string
-            f.write('"' + pids + '"' + ';')       #writes the string and a semi-colon to the file 'f'
-            owner = photo.get('owner')
-            owners = str(owner)
-            f.write('"' + owners + '";')
-            try:                        #any unicode errors in the title will have Unicodeerror as their title.
-                title = photo.get('title')
-                titles = str(title)
-                f.write('"' + titles + '";')
-            except UnicodeEncodeError:
-                f.write('"UnicodeEncodeError";')
-            lat = photo.get('latitude')
-            lats = str(lat)
-            f.write('"' + lats + '";')
-            lon = photo.get('longitude')
-            lons = str(lon)
-            f.write('"' + lons + '";')
-            placeid = photo.get('place_id')
-            placeids = str(placeid)
-            f.write('"' + placeids + '";')
-            woeid = photo.get('woeid')
-            woeids = str(woeid)
-            f.write('"' + woeids + '";')
-            try:                #same as above but with tags
-                tag = photo.get('tags')
-                tags = str(tag)
-                f.write('"' + tags + '";')
-            except UnicodeEncodeError:
-                f.write('"UnicodeEncodeError";')
-            date_taken = photo.get('datetaken')
-            date_takens = str(date_taken)
-            f.write('"' + date_takens + '"\n')   # the \n moves it down to the next line to start the next photo.
+        # for photo in result.iter('photo'):
+        #     pid = photo.get('id')     #pid = photoid, this gets the XML element labled id from the method above
+        #     pids = str(pid)        #changes the data type of pid into a string
+        #     f.write('"' + pids + '"' + ';')       #writes the string and a semi-colon to the file 'f'
+        #     owner = photo.get('owner')
+        #     owners = str(owner)
+        #     f.write('"' + owners + '";')
+        #     try:                        #any unicode errors in the title will have Unicodeerror as their title.
+        #         title = photo.get('title')
+        #         titles = str(title)
+        #         f.write('"' + titles + '";')
+        #     except UnicodeEncodeError:
+        #         f.write('"UnicodeEncodeError";')
+        #     lat = photo.get('latitude')
+        #     lats = str(lat)
+        #     f.write('"' + lats + '";')
+        #     lon = photo.get('longitude')
+        #     lons = str(lon)
+        #     f.write('"' + lons + '";')
+        #     placeid = photo.get('place_id')
+        #     placeids = str(placeid)
+        #     f.write('"' + placeids + '";')
+        #     woeid = photo.get('woeid')
+        #     woeids = str(woeid)
+        #     f.write('"' + woeids + '";')
+        #     try:                #same as above but with tags
+        #         tag = photo.get('tags')
+        #         tags = str(tag)
+        #         f.write('"' + tags + '";')
+        #     except UnicodeEncodeError:
+        #         f.write('"UnicodeEncodeError";')
+        #     date_taken = photo.get('datetaken')
+        #     date_takens = str(date_taken)
+        #     f.write('"' + date_takens + '"\n')   # the \n moves it down to the next line to start the next photo.
 
 
 
