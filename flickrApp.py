@@ -87,40 +87,13 @@ def get_data(box, pages):
                     'extras' : 'geo, date_taken, tags, url_sq'}
         result = requests.get(url, params = args)
         curpage += 1
-        # for photo in result.iter('photo'):
-        #     pid = photo.get('id')     #pid = photoid, this gets the XML element labled id from the method above
-        #     pids = str(pid)        #changes the data type of pid into a string
-        #     f.write('"' + pids + '"' + ';')       #writes the string and a semi-colon to the file 'f'
-        #     owner = photo.get('owner')
-        #     owners = str(owner)
-        #     f.write('"' + owners + '";')
-        #     try:                        #any unicode errors in the title will have Unicodeerror as their title.
-        #         title = photo.get('title')
-        #         titles = str(title)
-        #         f.write('"' + titles + '";')
-        #     except UnicodeEncodeError:
-        #         f.write('"UnicodeEncodeError";')
-        #     lat = photo.get('latitude')
-        #     lats = str(lat)
-        #     f.write('"' + lats + '";')
-        #     lon = photo.get('longitude')
-        #     lons = str(lon)
-        #     f.write('"' + lons + '";')
-        #     placeid = photo.get('place_id')
-        #     placeids = str(placeid)
-        #     f.write('"' + placeids + '";')
-        #     woeid = photo.get('woeid')
-        #     woeids = str(woeid)
-        #     f.write('"' + woeids + '";')
-        #     try:                #same as above but with tags
-        #         tag = photo.get('tags')
-        #         tags = str(tag)
-        #         f.write('"' + tags + '";')
-        #     except UnicodeEncodeError:
-        #         f.write('"UnicodeEncodeError";')
-        #     date_taken = photo.get('datetaken')
-        #     date_takens = str(date_taken)
-        #     f.write('"' + date_takens + '"\n')   # the \n moves it down to the next line to start the next photo.
+        for photo in result[1]:
+            pid = str(photo.attrib['id'])
+            line = "%s \n" %(pid)
+            f.write(line)
+
+
+
 
 
 
