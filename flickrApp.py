@@ -3,7 +3,7 @@ __author__ = 'waynejessen'
 import xml.etree.ElementTree as ET
 import requests
 
-f = open('flickr-data-SF#1.csv', 'w')
+f = open('flickr-data-SF#.csv', 'w')
 
 g = open('smallboxes-SF', 'w')
 # api_key = 'for'
@@ -29,7 +29,7 @@ smallboxes = []
 #current box check for the total number of photos
 def check_current_box(curbox):
     stringBox = str(curbox).strip("[]")
-    args = {'min_take_date' : '2011-01-01',
+    args = {'min_taken_date' : '2014-01-01',
             'bbox' : stringBox,
              'accuracy' : 16,
              'extras' : 'geo, date_taken, tags, url_sq'}
@@ -81,15 +81,75 @@ def get_data(box, pages):
     curpage = 1
     while curpage <= pages:
         stringBox = str(box).strip("[]")
-        args = {'min_take_date' : '2011-01-01',
+        args = {'min_taken_date' : '2011-01-01',
                     'bbox' : stringBox,
                     'accuracy' : 16,
                     'extras' : 'geo, date_taken, tags, url_sq'}
         result = requests.get(url, params = args)
+        data = ET.fromstring(result.content)
         curpage += 1
-        for photo in result[1]:
-            pid = str(photo.attrib['id'])
-            line = "%s \n" %(pid)
+        for photo in data[0]:
+            try:
+                pid = str(photo.attrib['id'])
+            except:
+                pid = "PID problem"
+            try:
+                owner = str(photo.attrib['owner'])
+            except:
+                owner  = "owner problem"
+            try:
+                secret = str(photo.attrib['secret'])
+            except:
+                secret = "secret problem"
+            try:
+                server = str(photo.attrib['server'])
+            except:
+                server = "sever problem"
+            try:
+                farm = str(photo.attrib['farm'])
+            except:
+                farm = "farm problem"
+            try:
+                title =str(photo.attrib['title'])
+            except:
+                title = "title problem"
+            try:
+                latitude = str(photo.attrib['latitude'])
+            except:
+                latitude = "latitude problem"
+            try:    
+                longitude = str(photo.attrib['longitude'])
+            except:
+                longitude = "longitude problem"
+            try:
+                woeid = str(photo.attrib['woeid'])
+            except:
+                woeid = "woied problem"
+            try:
+                place_id = str(photo.attrib['place_id'])
+            except:
+                place_id = "place_id problem"
+            try:
+                url_sq =  str(photo.attrib['url_sq'])
+            except:
+                url_sq = "url_sq problem"
+            try:
+                tags = str(photo.attrib['tags'])
+            except:
+                tags = "tags problem"
+
+            line = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n" %(   pid,            
+                                                                owner,
+                                                                secret,
+                                                                server,
+                                                                farm,
+                                                                title, 
+                                                                latitude, 
+                                                                longitude,
+                                                                woeid,
+                                                                place_id,
+                                                                url_sq,
+                                                                tags)
             f.write(line)
 
 
